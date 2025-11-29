@@ -11,7 +11,7 @@ using GymMangmentBLL.Services.Classes;
 using GymMangmentBLL.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+ 
 namespace GymManagmentPL
 {
     public class Program
