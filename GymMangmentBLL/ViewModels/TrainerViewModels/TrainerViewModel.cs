@@ -1,0 +1,25 @@
+﻿using GymManagmentDAL.Entities;
+using GymManagmentDAL.Entities.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GymMangmentBLL.ViewModels.TrainerViewModels
+{
+    public class TrainerViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string Phone { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Specialty { get; set; } = null!;
+        public Address Address { get; set; } = null!;
+        public DateTime DateOfBirth { get; set; }
+        public Gender Gender { get; set; } 
+
+
+        List<Session> Sessions { get; set; } = null!;
+    }
+}

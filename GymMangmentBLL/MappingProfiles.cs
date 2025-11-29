@@ -1,0 +1,239 @@
+﻿using AutoMapper;
+using GymManagementSystemBLL.ViewModels.SessionViewModels;
+using GymManagmentDAL.Entities;
+using GymMangmentBLL.ViewModels.MemberShipsViewModels;
+using GymMangmentBLL.ViewModels.MemberViewModels;
+using GymMangmentBLL.ViewModels.PlanViewModels;
+using GymMangmentBLL.ViewModels.SessionScheduls;
+using GymMangmentBLL.ViewModels.SessionViewModels;
+using GymMangmentBLL.ViewModels.TrainerViewModels;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GymMangmentBLL
+{
+    public class MappingProfiles : Profile
+    {
+        public MappingProfiles()
+        {
+
+            #region AutoMappering For Session 
+
+            CreateMap<Session, SessionViewModel>()
+         .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.SessionCategory.CategoryName))
+         .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.SessionTrainer.Name))
+         .ForMember(dest => dest.AvailabaleSlots, opt => opt.Ignore());
+
+            CreateMap<CreateSessionViewModel, Session>();
+
+            CreateMap<Session, UpdateSessionViewModel>();
+
+            CreateMap<UpdateSessionViewModel, Session>();
+
+            CreateMap<Trainer, TrainerSelectViewModel>();
+
+            CreateMap<Category, CategorySelectViewModel>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CategoryName));
+
+            #endregion
+
+            #region AutoMappering For Member 
+
+            //  من CreateMemberViewModel → Member
+            CreateMap<CreateMemberViewModel, Member>()
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new Address
+                {
+                    BuildingNumber = src.BuildingNumber,
+                    Street = src.Street,
+                    City = src.City
+                }))
+                .ForMember(dest => dest.HealthRecord, opt => opt.MapFrom(src => new HealthRecord
+                {
+                    Height = src.HealthRecordViewModel.Height,
+                    Weight = src.HealthRecordViewModel.Weight,
+                    BloodType = src.HealthRecordViewModel.BloodType,
+                    Notes = src.HealthRecordViewModel.Note
+                }));
+
+            // GetMemberDetailsById
+            CreateMap<Member, MemberViewModel>()
+    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneNumber))
+    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))
+    .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth.ToString("yyyy-MM-dd")))
+    .ForMember(dest => dest.Address, opt => opt.MapFrom(src =>
+        $"{src.Address.BuildingNumber}, {src.Address.Street}, {src.Address.City}"))
+    .ForMember(dest => dest.Photo, opt => opt.MapFrom(src => src.Photo))
+    // القيم دي هنعبيها يدويًا بعد المابّينج
+    .ForMember(dest => dest.MembershipStartDate, opt => opt.Ignore())
+    .ForMember(dest => dest.MembershipEndDate, opt => opt.Ignore())
+    .ForMember(dest => dest.PlanName, opt => opt.Ignore());
+
+
+            ////  من Member → MemberViewModel
+            //CreateMap<Member, MemberViewModel>()
+            //    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneNumber))
+            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))
+            //    .ForMember(dest => dest.Address, opt => opt.MapFrom(src =>
+            //        $"{src.Address.BuildingNumber}, {src.Address.Street}, {src.Address.City}"));
+
+            // من Member → MemberToUpdateViewModel
+            CreateMap<Member, MemberToUpdateViewModel>()
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Address.BuildingNumber))
+                .ForMember(dest => dest.Street, opt => opt.MapFrom(src => src.Address.Street))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Address.City));
+
+            CreateMap<MemberToUpdateViewModel, Member>() // for update
+       .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
+       .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new Address
+       {
+           BuildingNumber = src.BuildingNumber,
+           Street = src.Street,
+           City = src.City
+       }));
+            ///
+            CreateMap<Member, MemberViewModel>()
+    .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth))
+    .ForMember(dest => dest.MembershipStartDate, opt => opt.Ignore()) 
+    .ForMember(dest => dest.MembershipEndDate, opt => opt.Ignore());
+
+
+            //  من HealthRecord → HealthRecordViewModel
+            CreateMap<HealthRecord, HealthRecordViewModel>()
+                .ForMember(dest => dest.Note, opt => opt.MapFrom(src => src.Notes));
+
+            //  من HealthRecordViewModel → HealthRecord
+            CreateMap<HealthRecordViewModel, HealthRecord>()
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Note));
+
+
+            #endregion
+
+            #region AutoMappering For Plan
+
+            //  من Entity إلى ViewModel
+            CreateMap<Plan, PlanViewModel>()
+                .ForMember(dest => dest.DurationDays, opt => opt.MapFrom(src => src.DurationInDays));
+
+            //  من Entity إلى UpdatePlanViewModel
+            CreateMap<Plan, UpdatePlanViewModel>()
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.DurationDays, opt => opt.MapFrom(src => src.DurationInDays));
+
+            //  من UpdatePlanViewModel إلى Entity (عند التحديث)
+            CreateMap<UpdatePlanViewModel, Plan>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.PlanName))
+                .ForMember(dest => dest.DurationInDays, opt => opt.MapFrom(src => src.DurationDays))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
+
+
+            #endregion
+
+            #region AutoMappering For Trainer
+
+            //  من Trainer → TrainerViewModel
+            CreateMap<Trainer, TrainerViewModel>()
+    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneNumber))
+    .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialties.ToString()))
+    .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth)) //  لازم تضيف ده
+    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new Address
+    {
+        BuildingNumber = src.Address.BuildingNumber,
+        Street = src.Address.Street,
+        City = src.Address.City
+    }));
+
+
+            //  من CreateTrainerViewModel → Trainer
+            CreateMap<CreateTrainerViewModel, Trainer>()
+    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
+    .ForMember(dest => dest.Specialties, opt => opt.MapFrom(src => src.Specialty))
+    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new Address
+    {
+        BuildingNumber = src.BuildingNumber,
+        Street = src.Street,
+        City = src.City
+    }))
+    .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth)) //  تأكيد واضح
+    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender));
+
+
+
+            // من Trainer → TrainerToUpdateViewModel
+            CreateMap<Trainer, TrainerToUpdateViewModel>()
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Address.BuildingNumber))
+                .ForMember(dest => dest.Street, opt => opt.MapFrom(src => src.Address.Street))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Address.City))
+                .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialties))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender));
+
+            // من TrainerToUpdateViewModel → Trainer
+            CreateMap<TrainerToUpdateViewModel, Trainer>()
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Specialties, opt => opt.MapFrom(src => src.Specialty))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new Address
+                {
+                    BuildingNumber = src.BuildingNumber,
+                    Street = src.Street,
+                    City = src.City
+                }))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth));
+            #endregion
+
+            #region AutoMappering For MemberShips
+
+            CreateMap<MemberShip, MemberShipViewModel>()
+            .ForMember(dest => dest.MemberName, opt => opt.MapFrom(src => src.Member.Name))
+            .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.Plan.Name))
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
+
+
+            #endregion
+
+            #region AutoMappering For SessionSchedule (Member Sessions)
+
+            CreateMap<Session, MemberSessionViewModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.SessionName, opt => opt.MapFrom(src => src.SessionCategory.CategoryName)) // ممكن تغيرها لو عندك اسم للجلسة
+                .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.SessionTrainer.Name))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.StartDate.Date))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartDate.TimeOfDay))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndDate.TimeOfDay))
+                .ForMember(dest => dest.Capacity, opt => opt.MapFrom(src => src.Capacity))
+                .ForMember(dest => dest.BookedSlots, opt => opt.MapFrom(src => src.SessionMembers.Count))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>
+                    DateTime.Now < src.StartDate ? "Upcoming" :
+                    DateTime.Now >= src.StartDate && DateTime.Now <= src.EndDate ? "Ongoing" : "Completed"))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
+
+            #endregion
+
+            #region AutoMappering For SessionSchedule(Member Sessions)
+
+CreateMap<MemberSession, MemberBookingInfo>()
+    .ForMember(dest => dest.MemberName, opt => opt.MapFrom(src => src.Member.Name))
+    .ForMember(dest => dest.BookingDate, opt => opt.MapFrom(src => src.CreatedAt));
+
+CreateMap<Session, SessionMembersViewModel>()
+    .ForMember(dest => dest.SessionName, opt => opt.MapFrom(src => src.Description))
+    .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.SessionTrainer.Name));
+
+            #endregion
+
+            CreateMap<CreateBookingViewModel, MemberSession>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Pending"))
+            .ForMember(dest => dest.IsAttended, opt => opt.MapFrom(src => false));
+
+        }
+
+
+    }
+}
